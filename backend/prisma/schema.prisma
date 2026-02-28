@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String       @id @default(uuid())
+  email               String       @unique
+  password_hash       String?
+  google_id           String?      @unique
+  name                String?
+  phone               String?      @unique
+  role                String       @default("USER")
+  profile_picture_url String?
+  age                 Int?
+  weight              Float?
+  weight_unit         String?      @default("kg")
+  allergies           String[]     @default([])
+  chronic_conditions  String[]     @default([])
+  created_at          DateTime     @default(now())
+  medications         Medication[]
+  dose_logs           DoseLog[]
+  posts               Post[]
+}
+
+
+model Medication {
+  id                   String    @id @default(uuid())
+  user_id              String
+  name                 String
+  dosage               String
+  frequency            String
+  purpose              String?
+  schedule             String
+  next_dose            String?
+  next_dose_time       String?
+  icon                 String?
+  icon_bg              String?
+  status               String    @default("Active") // 'Active', 'Paused', 'Completed'
+  pill_count           Int?
+  low_stock_threshold  Int       @default(7)
+  refill_reminder      Boolean   @default(true)
+  side_effects         String[]  @default([])
+  storage_instructions String?
+  contraindications    String[]  @default([])
+  pill_image_uri       String?
+  version              Int       @default(1)
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @updatedAt
+  user                 User      @relation(fields: [user_id], references: [id])
+  dose_logs            DoseLog[]
+}
+
+model DoseLog {
+  id            String     @id @default(uuid())
+  user_id       String
+  medication_id String
+  timestamp     DateTime   @default(now())
+  status        String     @default("Taken") // 'Taken', 'Missed', 'Skipped'
+  user          User       @relation(fields: [user_id], references: [id])
+  medication    Medication @relation(fields: [medication_id], references: [id])
+}
+
+model Post {
+  id         String   @id @default(uuid())
+  title      String
+  content    String
+  image_url  String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  user_id    String
+  user       User     @relation(fields: [user_id], references: [id])
+}
+
